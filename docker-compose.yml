@@ -1,0 +1,53 @@
+version: '3.1'
+services:
+  nginx:
+    container_name: jorge_nginx
+    build: ./docker/nginx
+    command: nginx -g "daemon off;"
+    links:
+      - php
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - mysql
+
+  php:
+    container_name: jorge_php
+    build: ./docker/php
+    links:
+      - mysql
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql
+    container_name: jorge_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: jorge
+      MYSQL_DATABASE: jorge_transport
+      MYSQL_USER: jorge
+      MYSQL_PASSWORD: jorge
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: jorge_phpmyadmin
+    links:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8085:80
+    depends_on:
+      - mysql
